@@ -48,6 +48,11 @@ go env
 输出如此代表go安装好了。
 
 ## 第六步
+拉取源码
+
+```bash
+git clone https://github.com/EylinX/xdd.git
+```
 编译 xdd
 ```bash
 cd xdd && go build
