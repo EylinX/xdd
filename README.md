@@ -20,7 +20,8 @@ tar -xvzf go1.16.7.linux-amd64.tar.gz
 ![telegram-cloud-photo-size-5-6105087589842267498-y](https://user-images.githubusercontent.com/85423779/130250361-2d3a56de-6769-47cf-b25e-a41038cf7794.jpg)
 
 
-第四步，设置环境变量 vi /etc/profile ,将红框内文本复制到最后一行。 
+## 第四步
+设置环境变量 vi /etc/profile ,将红框内文本复制到最后一行。 
 
 ```bash
 export GO111MODULE=on
@@ -41,12 +42,14 @@ go env
 
 输出如此代表go安装好了。
 
-第六步，编译 
+## 第六步
+编译 xdd
 ```bash
 cd jd_study/xdd && go build
 ```
 
-第七步，配置好config。yaml 运行xdd
+## 第七步
+配置好config。yaml 运行xdd
 ```bash
 ./xdd
 ```
