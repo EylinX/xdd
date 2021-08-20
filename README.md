@@ -21,7 +21,12 @@ tar -xvzf go1.16.7.linux-amd64.tar.gz
 
 
 ## 第四步
-设置环境变量 vi /etc/profile ,将红框内文本复制到最后一行。 
+设置环境变量 
+
+```bash
+vi /etc/profile
+```
+将红框内文本复制到最后一行
 
 ```bash
 export GO111MODULE=on
