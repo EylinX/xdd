@@ -1,9 +1,10 @@
-## 教程
+## 声明本程序是搬运[cdle](https://github.com/cdle/xdd)大佬，源码归原作者所有
+
+## 菜鸟教程
 
 ## 第一步
 去 [官网](https://golang.google.cn/dl/) 找到现成的 go 安装包 [链接](https://golang.google.cn/dl/go1.16.7.linux-amd64.tar.gz) ，以 linux amd64 位为例。
 ![telegram-cloud-photo-size-5-6105087589842267495-y](https://user-images.githubusercontent.com/85423779/130250420-26915bed-c705-4113-8a24-431656f07191.jpg)
-
 
 ## 第二步
 拉取golang压缩包
@@ -18,15 +19,12 @@ tar -xvzf go1.16.7.linux-amd64.tar.gz
 ```
 ![telegram-cloud-photo-size-5-6105087589842267498-y](https://user-images.githubusercontent.com/85423779/130250361-2d3a56de-6769-47cf-b25e-a41038cf7794.jpg)
 
-
 ## 第三步
 设置环境变量 
-
 ```bash
 vi /etc/profile
 ```
 将红框内文本复制到最后一行
-
 ```bash
 export GO111MODULE=on
 export GOPROXY=https://goproxy.cn
@@ -36,9 +34,11 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```
 ![telegram-cloud-photo-size-5-6105087589842267499-y](https://user-images.githubusercontent.com/85423779/130249981-57cc9867-acc1-433d-945c-31481416e77c.jpg)
 
-esc :wq 保存文件后 source /etc/profile
+esc :wq 保存文件后
+```bash
+source /etc/profile
+```
 
-## 第四步
 输入 
 ```bash
 go env 
@@ -47,7 +47,7 @@ go env
 
 输出如此代表go安装好了。
 
-## 第五步
+## 第四步
 安装gcc
 ```bash
 ## ubuntu 命令
@@ -63,7 +63,7 @@ apt-get install git -y
 yum install git -y
 ```
 
-## 第六步
+## 第五步
 拉取源码（cd到想安装的目录再运行命令）
 
 ```bash
@@ -74,12 +74,12 @@ git clone https://github.com/EylinX/xdd.git
 cd xdd && go build
 ```
 
-## 第七步
+## 第六步
 配置好config。yaml 运行。/xdd
 ```bash
 ./xdd
 ```
-第一次运行扫码后 Ctrl+c 退出，再次保持运行
+第一次运行扫码后 Ctrl+c 退出，再后台运行 （其他方便自行搜索）
 ```bash
 ./xdd -d
 ```
@@ -87,3 +87,13 @@ cd xdd && go build
 ```bash
 nohup ./xdd > xdd.log 2>&1 &
 ```
+## 结尾
+查看是否运行成功,显示有运行脚本到 PID 即代表成功后台运行
+```bash
+ps -def | grep xdd
+```
+如需停止运行，找到 PID 后，就可以使用 kill PID 来停止运行
+```bash
+kill -9 进程号PID
+```
+##################好好学习#############天天向上####################
