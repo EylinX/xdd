@@ -34,12 +34,12 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```
 ![telegram-cloud-photo-size-5-6105087589842267499-y](https://user-images.githubusercontent.com/85423779/130249981-57cc9867-acc1-433d-945c-31481416e77c.jpg)
 
-esc :wq 保存文件后
+esc :wq 保存文件后输入：
 ```bash
 source /etc/profile
 ```
 
-输入 
+再输入： 
 ```bash
 go env 
 ```
