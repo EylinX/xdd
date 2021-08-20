@@ -50,7 +50,7 @@ go env
 ## 第六步
 编译 xdd
 ```bash
-cd jd_study/xdd && go build
+cd xdd && go build
 ```
 
 ## 第七步
