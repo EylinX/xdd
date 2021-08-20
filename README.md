@@ -6,13 +6,12 @@
 
 
 ## 第二步
+拉取golang压缩包
 ```bash
 cd /usr/local && wget https://golang.google.cn/dl/go1.16.7.linux-amd64.tar.gz -O go1.16.7.linux-amd64.tar.gz
 ```
 ![telegram-cloud-photo-size-5-6105087589842267497-y](https://user-images.githubusercontent.com/85423779/130250401-2668e075-31bd-4581-81c7-1c4d150f6e9f.jpg)
 
-
-## 第三步
 解压
 ```bash
 tar -xvzf go1.16.7.linux-amd64.tar.gz
@@ -20,7 +19,7 @@ tar -xvzf go1.16.7.linux-amd64.tar.gz
 ![telegram-cloud-photo-size-5-6105087589842267498-y](https://user-images.githubusercontent.com/85423779/130250361-2d3a56de-6769-47cf-b25e-a41038cf7794.jpg)
 
 
-## 第四步
+## 第三步
 设置环境变量 
 
 ```bash
@@ -39,6 +38,7 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 esc :wq 保存文件后 source /etc/profile
 
+## 第四步
 输入 
 ```bash
 go env 
@@ -47,8 +47,24 @@ go env
 
 输出如此代表go安装好了。
 
+## 第五步
+安装gcc
+```bash
+## ubuntu 命令
+apt-get install gcc -y
+## centos/debian 命令
+yum install gcc -y
+```
+安装git
+```bash
+## ubuntu 命令
+apt-get install git -y
+## centos/debian 命令
+yum install git -y
+```
+
 ## 第六步
-拉取源码
+拉取源码（cd到想安装的目录再运行命令）
 
 ```bash
 git clone https://github.com/EylinX/xdd.git
@@ -59,7 +75,15 @@ cd xdd && go build
 ```
 
 ## 第七步
-配置好config。yaml 运行xdd
+配置好config。yaml 运行。/xdd
 ```bash
 ./xdd
+```
+第一次运行扫码后 Ctrl+c 退出，再次保持运行
+```bash
+./xdd -d
+```
+或
+```bash
+nohup ./xdd > xdd.log 2>&1 &
 ```
