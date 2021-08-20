@@ -5,7 +5,7 @@
 ![telegram-cloud-photo-size-5-6105087589842267495-y](https://user-images.githubusercontent.com/85423779/130250420-26915bed-c705-4113-8a24-431656f07191.jpg)
 
 
-第二步
+## 第二步
 ```bash
 cd /usr/local && wget https://golang.google.cn/dl/go1.16.7.linux-amd64.tar.gz -O go1.16.7.linux-amd64.tar.gz
 ```
