@@ -12,7 +12,7 @@ cd /usr/local && wget https://golang.google.cn/dl/go1.16.7.linux-amd64.tar.gz -O
 ```
 ![telegram-cloud-photo-size-5-6105087589842267497-y](https://user-images.githubusercontent.com/85423779/130250401-2668e075-31bd-4581-81c7-1c4d150f6e9f.jpg)
 
-解压
+解压 (如果解压命令提示无效命令，安装 tar 即可）
 ```bash
 tar -xvzf go1.16.7.linux-amd64.tar.gz
 ```
