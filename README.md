@@ -170,7 +170,7 @@ systemctl enable xdd
 ```
 启动服务
 ```bash
-systemctl start xdd
+syatemctl start xdd
 ```
 停止服务
 ```bash
