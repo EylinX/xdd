@@ -136,12 +136,10 @@ daily_asset_push_cron: 0 9 * * * #日常资产推送时间
 repos:
   - git: https://github.com/EylinX/faker2.git #脚本库
 ```
-esc :wq 保存文件
 自定义回复配置编辑
 ```bash   
 vim /etc/xdd/conf/reply.php
 ```
-esc :wq 保存文件
 
 # 开机自启
 增加systemd服务
