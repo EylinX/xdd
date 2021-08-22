@@ -75,11 +75,11 @@ cd xdd && go build
 ```
 
 ## 第六步
-配置config[教程](https://github.com/EylinX/xdd/blob/main/README.md#开机自启) 运行。/xdd
+先[配置文件](https://github.com/EylinX/xdd/blob/main/README.md#配置教程) 后输入：
 ```bash
 ./xdd
 ```
-第一次运行扫码后 Ctrl+c 退出，再后台运行 
+扫码成功后 Ctrl+c 退出，再输入： 
 ```bash
 ./xdd -d
 ```
@@ -87,17 +87,12 @@ cd xdd && go build
 ```bash
 nohup ./xdd > xdd.log 2>&1 &
 ```
-## 结尾
-查看是否后台运行,显示有运行脚本到 PID 即代表成功后台运行
-```bash
-ps -def | grep xdd
-```
-如需停止运行，找到 PID 后，就可以使用 kill PID 来停止运行
-```bash
-kill -9 进程号PID
-```
-## 进阶教程
+或
+通过systemd添加[开机自启](https://github.com/EylinX/xdd/blob/main/README.md#开机自启)
+
+
 # 配置教程
+
 修改端口
 ```bash
 vim /etc/xdd/conf/app.conf
@@ -195,5 +190,12 @@ systemctl stop xdd
 ```bash
 systemctl restart xdd
 ```
-
+查看是否后台运行,显示有运行脚本到 PID 即代表成功后台运行
+```bash
+ps -def | grep xdd
+```
+如需停止运行，找到 PID 后，就可以使用 kill PID 来停止运行
+```bash
+kill -9 进程号PID
+```
 ##################好好学习#############天天向上####################
