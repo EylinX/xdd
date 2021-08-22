@@ -154,8 +154,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/bin/su  -c "cd /etc/xdd && nohup ./xdd > xdd.log 2>&1 &"
-Restart=on-failure
+ExecStart=/bin/su  -c "cd /etc/xdd && ./xdd -d"
 
 [Install]
 WantedBy=multi-user.target
