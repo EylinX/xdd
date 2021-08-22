@@ -67,7 +67,7 @@ yum install git -y
 拉取源码（cd到想安装的目录再运行命令）
 
 ```bash
-git clone https://github.com/EylinX/xdd.git
+cd /etc && git clone https://github.com/EylinX/xdd.git
 ```
 编译 xdd
 ```bash
@@ -79,7 +79,7 @@ cd xdd && go build
 ```bash
 ./xdd
 ```
-第一次运行扫码后 Ctrl+c 退出，再后台运行 （其他方便自行搜索）
+第一次运行扫码后 Ctrl+c 退出，再后台运行 
 ```bash
 ./xdd -d
 ```
@@ -88,7 +88,7 @@ cd xdd && go build
 nohup ./xdd > xdd.log 2>&1 &
 ```
 ## 结尾
-查看是否运行成功,显示有运行脚本到 PID 即代表成功后台运行
+查看是否后台运行,显示有运行脚本到 PID 即代表成功后台运行
 ```bash
 ps -def | grep xdd
 ```
@@ -96,4 +96,104 @@ ps -def | grep xdd
 ```bash
 kill -9 进程号PID
 ```
+## 进阶教程
+# 配置教程
+修改端口
+```bash
+vim /etc/xdd/conf/app.conf
+```
+修改config配置文件【重要】
+```bash
+vim /etc/xdd/conf/config.yaml
+```
+输入 i 进入编辑模式 将下面代码文本复制进去 按需修改
+```bash
+mode: parallel #模式 balance(均衡模式)、parallel(平行模式)
+containers: #容器，可配置多个
+  - address: http://192.168.2.6:5700 #青龙2.2、青龙2.8、v1v2v3v4v5访问地址
+    username: admin #用户名
+    password: admin123 #密码
+#    weigth:  #权重 balance模式下权重越高分得的ck越多，默认1 单容器禁用
+#    mode: parallel #单独对容器进行模式设置 单容器禁用
+#    limit: 1 #限制容器ck数目 单容器禁用
+  - address: http://192.168.2.5:5700 #第二个青龙2.2、青龙2.8、v1v2v3v4v5访问地址
+    username: admin
+    password: admin123
+#  - path: /Users/cdle/Desktop/jd_study/jdc/config.sh #本地配置文件路径 v1v2v3v4v5和不知名容器的配置
+#  - path: /Users/cdle/Desktop/jd_study/jdc/list.sh
+theme:  #自定义主题，支持本地、网络路径
+static: ./static #静态文件 便于自定义二维码页面时，引入css、js等文件
+master:  #管理员账户pin，有多个用'&'拼接
+database:  #数据库位置，默认./.xdd.db
+qywx_key:  #企业微信推送key
+daily_push: #定时任务
+resident: #均衡模式下所有容器共同的账号pin，有多个用'&'拼接。不建议填写，后续实现指定账号助力功能。
+#自定义ua
+user_agent:
+telegram_bot_token:  #telegram bot token
+telegram_user_id:  #telegrame user id
+qquid: 283371717 #接收通知的qq号
+qqgid: 727438347 #监听的群
+default_priority:  #新用户默认优先级，默认：1
+no_ghproxy: true #更新资源是否不使用代理 默认false
+qbot_public_mode: true  #qq机器人群聊模式，默认私聊模式
+daily_asset_push_cron: 0 9 * * * #日常资产推送时间
+repos:
+  - git: https://github.com/EylinX/faker2.git #脚本库
+```
+esc :wq 保存文件
+自定义回复配置编辑
+```bash   
+vim /etc/xdd/conf/reply.php
+```
+esc :wq 保存文件
+
+# 开机自启
+增加systemd服务
+```bash
+vim /lib/systemd/system/xdd.service
+```
+输入 i 进入编辑模式 将下面代码文本复制进去
+```bash
+[Unit]
+Description=xdd
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/su  -c "cd /etc/xdd && nohup ./xdd > xdd.log 2>&1 &"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+esc :wq 保存文件后输入：
+```bash
+systemctl daemon-reload
+```
+启动该服务，在系统 boot 时激活
+```bash
+systemctl enable xdd
+```
+启动服务
+```bash
+syatemctl start xdd
+```
+使用该命令查看服务的 log 信息
+```bash
+journalctl -u xdd
+```
+查看是否后台运行
+```bash
+ps -ef | grep xdd
+```
+停止服务
+```bash
+systemctl stop xdd
+````
+重启服务
+```bash
+systemctl restart xdd
+```
+
 ##################好好学习#############天天向上####################
