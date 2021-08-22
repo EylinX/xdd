@@ -75,7 +75,7 @@ cd xdd && go build
 ```
 
 ## 第六步
-配置好config。yaml 运行。/xdd
+配置config[教程](https://github.com/EylinX/xdd/blob/main/README.md#开机自启) 运行。/xdd
 ```bash
 ./xdd
 ```
