@@ -170,15 +170,7 @@ systemctl enable xdd
 ```
 启动服务
 ```bash
-syatemctl start xdd
-```
-使用该命令查看服务的 log 信息
-```bash
-journalctl -u xdd
-```
-查看是否后台运行
-```bash
-ps -ef | grep xdd
+systemctl start xdd
 ```
 停止服务
 ```bash
@@ -187,6 +179,10 @@ systemctl stop xdd
 重启服务
 ```bash
 systemctl restart xdd
+```
+使用该命令查看服务的 log 信息
+```bash
+journalctl -u xdd
 ```
 查看是否后台运行,显示有运行脚本到 PID 即代表成功后台运行
 ```bash
