@@ -157,6 +157,8 @@ ExecStart=/usr/bin/nohup /etc/xdd/xdd >/dev/null 2>&1 &
 ExecStop=/usr/bin/kill -9 $MAINPID
 Environment=HOME=/etc/xdd PWD=/etc/xdd
 StandardOutput=null
+Restart=on-abnormal
+RestartSec=60s
 
 [Install]
 WantedBy=multi-user.target
