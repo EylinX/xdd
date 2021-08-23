@@ -85,7 +85,7 @@ cd xdd && go build
 ```
 或
 ```bash
-nohup ./xdd > xdd.log 2>&1 &
+nohup ./xdd >/dev/null 2>&1 &
 ```
 或
 通过systemd添加[开机自启](https://github.com/EylinX/xdd/blob/main/README.md#开机自启)
