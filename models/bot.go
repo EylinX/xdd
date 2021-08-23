@@ -178,6 +178,7 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 				}
 				runTask(&Task{Path: "jd_tyt.js", Envs: []Env{
 					{Name: "tytpacketId", Value: ss[1]},
+					// {Name: "pins", Value: "xxxx"},
 				}}, msgs...)
 				return nil
 			}
