@@ -151,10 +151,12 @@ Description=xdd
 After=network.target
 
 [Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/bin/su  -c "cd /etc/xdd && ./xdd"
-ExecStop=/etc/xdd/xdd stop
+#Type=forking
+WorkingDirectory=/etc/xdd
+ExecStart=/usr/bin/nohup /etc/xdd/xdd >/dev/null 2>&1 &
+ExecStop=/usr/bin/kill -9 $MAINPID
+Environment=HOME=/etc/xdd PWD=/etc/xdd
+StandardOutput=null
 
 [Install]
 WantedBy=multi-user.target
