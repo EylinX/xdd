@@ -153,9 +153,8 @@ After=network.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/su  -c "cd /etc/xdd && ./xdd -d"
-ExecStop=/bin/su  -c "cd ~ && kill -9 $(ps -fe|grep xdd)"
-RestartSec=20
+ExecStart=/bin/su  -c "cd /etc/xdd && ./xdd"
+ExecStop=/etc/xdd/xdd stop
 
 [Install]
 WantedBy=multi-user.target
