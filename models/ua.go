@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	"github.com/beego/beego/v2/adapter/logs"
 	"github.com/beego/beego/v2/client/httplib"
 )
@@ -9,7 +11,11 @@ var ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/6
 
 func initUserAgent() {
 	u := &UserAgent{}
-	db.Order("id desc").First(u)
+	err := db.Order("id desc").First(u).Error
+	if err != nil && strings.Contains(err.Error(), "converting") {
+		db.Migrator().DropTable(&UserAgent{})
+		Daemon()
+	}
 	if u.Content != "" {
 		ua = u.Content
 	} else {
@@ -32,6 +38,6 @@ func GetUserAgent() string {
 }
 
 type UserAgent struct {
-	ID      string
+	ID      int
 	Content string
 }
