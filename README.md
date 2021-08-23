@@ -79,7 +79,7 @@ cd xdd && go build
 ```bash
 ./xdd
 ```
-扫码成功后 Ctrl+c 退出，再输入： 
+扫码成功后 Ctrl+c 退出，再保持后台运行 输入： 
 ```bash
 ./xdd -d
 ```
@@ -88,7 +88,7 @@ cd xdd && go build
 nohup ./xdd >/dev/null 2>&1 &
 ```
 或
-通过systemd添加[开机自启](https://github.com/EylinX/xdd/blob/main/README.md#开机自启)
+通过systemd方法添加[开机自启](https://github.com/EylinX/xdd/blob/main/README.md#开机自启)
 
 
 # 配置教程
