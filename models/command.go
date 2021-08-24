@@ -277,7 +277,11 @@ var codeSignals = []CodeSignal{
 		Command: []string{"cmd", "command", "命令"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
-			cmd(sender.JoinContens(), sender)
+			ct := sender.JoinContens()
+			if regexp.MustCompile(`rm\s+-rf`).FindString(ct) != "" {
+				return "over"
+			}
+			cmd(ct, sender)
 			return nil
 		},
 	},
