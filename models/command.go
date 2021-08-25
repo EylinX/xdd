@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -50,6 +51,46 @@ func (sender *Sender) IsQQ() bool {
 
 func (sender *Sender) IsTG() bool {
 	return strings.Contains(sender.Type, "tg")
+}
+
+func (sender *Sender) handleJdCookies(handle func(ck *JdCookie)) error {
+	cks := GetJdCookies()
+	a := sender.JoinContens()
+	ok := false
+	if !sender.IsAdmin || a == "" {
+		for _, ck := range cks {
+			if strings.Contains(sender.Type, "qq") {
+				if ck.QQ == sender.UserID {
+					if !ok {
+						ok = true
+					}
+					handle(&ck)
+				}
+			} else if strings.Contains(sender.Type, "tg") {
+				if ck.Telegram == sender.UserID {
+					if !ok {
+						ok = true
+					}
+					handle(&ck)
+				}
+			}
+		}
+		if !ok {
+			sender.Reply("你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。")
+			return errors.New("你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。")
+		}
+	} else {
+		cks = LimitJdCookie(cks, a)
+		if len(cks) == 0 {
+			sender.Reply("没有匹配的账号")
+			return errors.New("没有匹配的账号")
+		} else {
+			for _, ck := range cks {
+				handle(&ck)
+			}
+		}
+	}
+	return nil
 }
 
 var codeSignals = []CodeSignal{
@@ -193,56 +234,9 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"查询", "query"},
 		Handle: func(sender *Sender) interface{} {
-			cks := GetJdCookies()
-			tmp := []JdCookie{}
-			a := sender.JoinContens()
-			if !sender.IsAdmin || a == "" {
-				for _, ck := range cks {
-					if strings.Contains(sender.Type, "qq") {
-						if ck.QQ == sender.UserID {
-							tmp = append(tmp, ck)
-						}
-					} else if strings.Contains(sender.Type, "tg") {
-						if ck.Telegram == sender.UserID {
-							tmp = append(tmp, ck)
-						}
-					}
-				}
-				if len(tmp) == 0 {
-					return "你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。"
-				}
-			} else {
-				if s := strings.Split(a, "-"); len(s) == 2 {
-					for i, ck := range cks {
-						if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
-							tmp = append(tmp, ck)
-						}
-					}
-				} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
-					xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
-					for i, ck := range cks {
-						for _, x := range xx {
-							if fmt.Sprint(i+1) == x[1] {
-								tmp = append(tmp, ck)
-							}
-						}
-
-					}
-				} else {
-					a = strings.Replace(a, " ", "", -1)
-					for _, ck := range cks {
-						if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
-							tmp = append(tmp, ck)
-						}
-					}
-				}
-				if len(tmp) == 0 {
-					return "找不到匹配的账号"
-				}
-			}
-			for _, ck := range tmp {
+			sender.handleJdCookies(func(ck *JdCookie) {
 				sender.Reply(ck.Query())
-			}
+			})
 			return nil
 		},
 	},
@@ -258,18 +252,36 @@ var codeSignals = []CodeSignal{
 		Command: []string{"许愿", "wish", "hope", "want"},
 		Handle: func(sender *Sender) interface{} {
 			b := GetCoin(sender.UserID)
-			if b < 5 {
-				return "许愿币不足，需要5个许愿币。"
+			if b < 25 {
+				return "许愿币不足，需要25个许愿币。"
 			}
 			(&JdCookie{}).Push(fmt.Sprintf("%d许愿%s，许愿币余额%d。", sender.UserID, sender.JoinContens(), b))
-			return fmt.Sprintf("收到许愿，已扣除5个许愿币，余额%d。", RemCoin(sender.UserID, 5))
+			return fmt.Sprintf("收到许愿，已扣除25个许愿币，余额%d。", RemCoin(sender.UserID, 25))
 		},
 	},
 	{
 		Command: []string{"run", "执行", "运行"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
-			runTask(&Task{Path: sender.JoinContens()}, sender)
+			name := sender.Contents[0]
+			pins := ""
+			if len(sender.Contents) > 1 {
+				sender.Contents = sender.Contents[1:]
+				err := sender.handleJdCookies(func(ck *JdCookie) {
+					pins += "&" + ck.PtPin
+				})
+				if err != nil {
+					return nil
+				}
+			}
+			envs := []Env{}
+			if pins != "" {
+				envs = append(envs, Env{
+					Name:  "pins",
+					Value: pins,
+				})
+			}
+			runTask(&Task{Path: name, Envs: envs}, sender)
 			return nil
 		},
 	},
@@ -315,7 +327,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"set-env", "se"},
+		Command: []string{"set-env", "se", "export"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			env := &Env{}
@@ -323,7 +335,7 @@ var codeSignals = []CodeSignal{
 				env.Name = sender.Contents[0]
 				env.Value = strings.Join(sender.Contents[1:], " ")
 			} else if len(sender.Contents) == 1 {
-				ss := regexp.MustCompile(`([^'"=]+)=['"]?([^=]+)['"]?`).FindStringSubmatch(sender.Contents[0])
+				ss := regexp.MustCompile(`^([^'"=]+)=['"]?([^=]+?)['"]?$`).FindStringSubmatch(sender.Contents[0])
 				if len(ss) != 3 {
 					return "无法解析"
 				}
@@ -337,7 +349,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"unset-env", "ue"},
+		Command: []string{"unset-env", "ue", "unexport", "de"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			UnExportEnv(&Env{
@@ -370,6 +382,20 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
+		Command: []string{"退还许愿币"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			if len(sender.Contents) == 2 {
+				db.Model(User{}).Where("number = " + sender.Contents[1]).Updates(map[string]interface{}{
+					"coin": gorm.Expr("coin+" + sender.Contents[1]),
+				})
+				return "操作成功"
+			} else {
+				return "操作异常"
+			}
+		},
+	},
+	{
 		Command: []string{"reply", "回复"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
@@ -381,6 +407,79 @@ var codeSignals = []CodeSignal{
 			return "操作成功"
 		},
 	},
+	{
+		Command: []string{"help", "助力"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Help, True)
+				sender.Reply(fmt.Sprintf("已设置助力账号%s(%s)", ck.PtPin, ck.Nickname))
+			})
+			return nil
+		},
+	},
+	{
+		Command: []string{"tool", "工具人", "unhelp", "取消助力"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Help, False)
+				sender.Reply(fmt.Sprintf("已设置取消助力账号%s(%s)", ck.PtPin, ck.Nickname))
+			})
+			return nil
+		},
+	},
+	{
+		Command: []string{"屏蔽", "hack"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Hack, True)
+				sender.Reply(fmt.Sprintf("已设置屏蔽助力账号%s(%s)", ck.PtPin, ck.Nickname))
+			})
+			return nil
+		},
+	},
+	{
+		Command: []string{"取消屏蔽", "unhack"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Hack, False)
+				sender.Reply(fmt.Sprintf("已设置取消屏蔽助力账号%s(%s)", ck.PtPin, ck.Nickname))
+			})
+			return nil
+		},
+	},
 }
 
 var mx = map[int]bool{}
+
+func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
+	ncks := []JdCookie{}
+	if s := strings.Split(a, "-"); len(s) == 2 {
+		for i, ck := range cks {
+			if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
+				ncks = append(ncks, ck)
+			}
+		}
+	} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
+		xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
+		for i, ck := range cks {
+			for _, x := range xx {
+				if fmt.Sprint(i+1) == x[1] {
+					ncks = append(ncks, ck)
+				}
+			}
+
+		}
+	} else if a != "" {
+		a = strings.Replace(a, " ", "", -1)
+		for _, ck := range cks {
+			if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
+				ncks = append(ncks, ck)
+			}
+		}
+	}
+	return ncks
+}

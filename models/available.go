@@ -134,7 +134,6 @@ func initCookie() {
 }
 
 func CookieOK(ck *JdCookie) bool {
-
 	cookie := fmt.Sprintf("pt_key=%s;pt_pin=%s;", ck.PtKey, ck.PtPin)
 	// jdzz(cookie, make(chan int64))
 	if ck == nil {
@@ -166,12 +165,19 @@ func CookieOK(ck *JdCookie) bool {
 			return false
 		}
 	case "0":
-		if ui.Data.UserInfo.BaseInfo.Nickname != ck.Nickname || ui.Data.AssetInfo.BeanNum != ck.BeanNum {
+		if ui.Data.UserInfo.BaseInfo.CurPin != ck.PtPin {
+			return false
+		}
+		if ui.Data.UserInfo.BaseInfo.Nickname != ck.Nickname || ui.Data.AssetInfo.BeanNum != ck.BeanNum || ui.Data.UserInfo.BaseInfo.UserLevel != ck.UserLevel || ui.Data.UserInfo.BaseInfo.LevelName != ck.LevelName {
 			ck.Updates(JdCookie{
 				Nickname:  ui.Data.UserInfo.BaseInfo.Nickname,
 				BeanNum:   ui.Data.AssetInfo.BeanNum,
 				Available: True,
+				UserLevel: ui.Data.UserInfo.BaseInfo.UserLevel,
+				LevelName: ui.Data.UserInfo.BaseInfo.LevelName,
 			})
+			ck.UserLevel = ui.Data.UserInfo.BaseInfo.UserLevel
+			ck.LevelName = ui.Data.UserInfo.BaseInfo.LevelName
 			ck.Nickname = ui.Data.UserInfo.BaseInfo.Nickname
 			ck.BeanNum = ui.Data.AssetInfo.BeanNum
 		}
