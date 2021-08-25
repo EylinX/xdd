@@ -458,10 +458,7 @@ var codeSignals = []CodeSignal{
 			if sender.ReplySenderUserID == 0 {
 				return "没有转账目标"
 			}
-			if len(sender.Contents) == 0 {
-				return "未设置转账金额"
-			}
-			amount := Int(sender.Contents[0])
+			amount := Int(sender.JoinContens())
 			if !sender.IsAdmin {
 				if amount <= 0 {
 					return "转账金额必须大于0"
@@ -479,7 +476,7 @@ var codeSignals = []CodeSignal{
 				return "转账失败"
 			}
 			if tx.Model(User{}).Where("number = ?", sender.ReplySenderUserID).Updates(map[string]interface{}{
-				"coin": gorm.Expr(fmt.Sprintf("coin - %d", amount)),
+				"coin": gorm.Expr(fmt.Sprintf("coin + %d", amount)),
 			}).RowsAffected == 0 {
 				tx.Rollback()
 				return "转账失败"
