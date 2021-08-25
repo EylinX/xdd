@@ -102,7 +102,9 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 		}
 		{ //
 			ss := regexp.MustCompile(`pt_key=([^;=\s]+);pt_pin=([^;=\s]+)`).FindAllStringSubmatch(msg, -1)
+
 			if len(ss) > 0 {
+
 				xyb := 0
 				for _, s := range ss {
 					ck := JdCookie{
