@@ -105,12 +105,12 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"sign", "打卡", "签到"},
 		Handle: func(sender *Sender) interface{} {
-			if sender.Type == "tgg" {
-				sender.Type = "tg"
-			}
-			if sender.Type == "qqg" {
-				sender.Type = "qq"
-			}
+			//if sender.Type == "tgg" {
+			//	sender.Type = "tg"
+			//}
+			//if sender.Type == "qqg" {
+			//	sender.Type = "qq"
+			//}
 			zero, _ := time.ParseInLocation("2006-01-02", time.Now().Local().Format("2006-01-02"), time.Local)
 			var u User
 			var ntime = time.Now()
@@ -157,7 +157,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"coin", "许愿币"},
+		Command: []string{"coin", "许愿币", "余额"},
 		Handle: func(sender *Sender) interface{} {
 			return fmt.Sprintf("余额%d", GetCoin(sender.UserID))
 		},
@@ -252,6 +252,34 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
+		Command: []string{"翻翻乐"},
+		Handle: func(sender *Sender) interface{} {
+			cost := Int(sender.JoinContens())
+			if cost <= 0 || cost > 10000 {
+				cost = 1
+			}
+			u := &User{}
+			if err := db.Where("number = ?", sender.UserID).First(u).Error; err != nil || u.Coin < cost {
+				return "许愿币不足，先去打卡吧。"
+			}
+			baga := 0
+			if u.Coin > 100000 {
+				baga = u.Coin
+				cost = u.Coin
+			}
+			if time.Now().Nanosecond()%10 < 6 || baga > 0 {
+				sender.Reply(fmt.Sprintf("很遗憾你失去了%d枚许愿币。", cost))
+				cost = -cost
+			} else {
+				sender.Reply(fmt.Sprintf("很幸运你获得%d枚许愿币，10秒后自动转入余额。", cost))
+				time.Sleep(time.Second * 10)
+				sender.Reply(fmt.Sprintf("%d枚许愿币已到账。", cost))
+			}
+			db.Model(u).Update("coin", gorm.Expr(fmt.Sprintf("coin + %d", cost)))
+			return nil
+		},
+	},
+	{
 		Command: []string{"许愿", "愿望", "wish", "hope", "want"},
 		Handle: func(sender *Sender) interface{} {
 			ct := sender.JoinContens()
@@ -283,7 +311,7 @@ var codeSignals = []CodeSignal{
 				}
 				return strings.Join(rt, "\n")
 			}
-			cost := 25
+			cost := 66
 			if sender.IsAdmin {
 				cost = 1
 			}
@@ -452,13 +480,17 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"祈祷"},
+		Command: []string{"祈祷", "祈愿", "祈福"},
 		Handle: func(sender *Sender) interface{} {
 			if _, ok := mx[sender.UserID]; ok {
 				return "你祈祷过啦，等下次我忘记了再来吧。"
 			}
 			mx[sender.UserID] = true
-			AddCoin(sender.UserID)
+			if db.Model(User{}).Where("number = ? ", sender.UserID).Update(
+				"coin", gorm.Expr(fmt.Sprintf("coin + %d", 1)),
+			).RowsAffected == 0 {
+				return "先去打卡吧你。"
+			}
 			return "许愿币+1"
 		},
 	},
@@ -528,30 +560,44 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"转账"},
 		Handle: func(sender *Sender) interface{} {
+			cost := 1
 			if sender.ReplySenderUserID == 0 {
-				return "没有转账目标"
+				return "没有转账目标。"
 			}
 			amount := Int(sender.JoinContens())
 			if !sender.IsAdmin {
 				if amount <= 0 {
-					return "转账金额必须大于等于1"
+					return "转账金额必须大于等于1。"
 				}
 			}
 			if sender.UserID == sender.ReplySenderUserID {
-				return "转账成功"
+				db.Model(User{}).Where("number = ?", sender.UserID).Updates(map[string]interface{}{
+					"coin": gorm.Expr(fmt.Sprintf("coin - %d", cost)),
+				})
+				return fmt.Sprintf("转账成功，扣除手续费%d枚许愿币。", cost)
 			}
 			if amount > 10000 {
-				return "单笔转账限额10000"
+				return "单笔转账限额10000。"
 			}
 			tx := db.Begin()
 			s := &User{}
 			if err := db.Where("number = ?", sender.UserID).First(&s).Error; err != nil {
 				tx.Rollback()
-				return "你还没有开通钱包功能"
+				return "你还没有开通钱包功能。"
 			}
 			if s.Coin < amount {
 				tx.Rollback()
-				return "余额不足"
+				return "余额不足。"
+			}
+			real := amount
+			if !sender.IsAdmin {
+				if amount <= cost {
+					tx.Rollback()
+					return fmt.Sprintf("转账失败，手续费需要%d个许愿币。", cost)
+				}
+				real = amount - cost
+			} else {
+				cost = 0
 			}
 			r := &User{}
 			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&r).Error; err != nil {
@@ -565,13 +611,13 @@ var codeSignals = []CodeSignal{
 				return "转账失败"
 			}
 			if tx.Model(User{}).Where("number = ?", sender.ReplySenderUserID).Updates(map[string]interface{}{
-				"coin": gorm.Expr(fmt.Sprintf("coin + %d", amount)),
+				"coin": gorm.Expr(fmt.Sprintf("coin + %d", real)),
 			}).RowsAffected == 0 {
 				tx.Rollback()
 				return "转账失败"
 			}
 			tx.Commit()
-			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d。", s.Coin-amount, r.Coin+amount)
+			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d，手续费%d。", s.Coin-amount, r.Coin+real, cost)
 		},
 	},
 	{
